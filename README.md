@@ -20,7 +20,7 @@ blender --python export_one_fbx.py --background
 
 To build the library:
 ```
-python3 build_library
+python3 build_library --fbx_directory test_toys4K_fbx --dest library/ --vhacd 4000
 ```
 
 ###Transfering the library to another computer
