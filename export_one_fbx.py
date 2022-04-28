@@ -2,11 +2,13 @@ import bpy
 import os
 
 from bpy.app.handlers import persistent
+
+
 #blender --python script.py --background
 
-@persistent
-def load_handler(dummy):
-    print("Load Handler:", bpy.data.filepath)
+# @persistent
+# def load_handler(dummy):
+#     print("Load Handler:", bpy.data.filepath)
 
 basedir = bpy.path.abspath('//')
 dir_dest = "toys4K_fbx_one/"
@@ -31,8 +33,7 @@ def save_object(objet, category_dir):
         ob.select_set(False)
 
 for category in os.listdir(os.path.join(basedir, "toys4k_blend_files/")):
-    category_dir = os.path.join(basedir, "toys4k"
-                                         "+_blend_files/" + category + "/")
+    category_dir = os.path.join(basedir, "toys4k_blend_files/" + category + "/")
     i=0
     for objet in os.listdir(category_dir):
         if i < 1:

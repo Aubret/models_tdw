@@ -1,6 +1,7 @@
 import argparse
 import copy
 import json
+import os
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
@@ -17,6 +18,7 @@ js_copy = copy.deepcopy(js)
 for key, val in js["records"].items():
     for platform in ["Linux", "Windows", "Darwin"]:
         new_url = current +args.type+"/" + val["name"]
+    js_copy["records"][key]["urls"][platform] = "file:///" + new_url
 
 with open(current+extension, 'w') as f:
     json.dump(js_copy, f)
