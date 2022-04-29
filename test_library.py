@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+import time
 from subprocess import Popen
 
 from tdw.add_ons.floorplan import Floorplan
@@ -93,6 +94,8 @@ def run(begin=0, end=2000):
         id = c.get_unique_id()
         if i < begin or i > end or r.name == "":
             continue
+
+        # if r.name != "drum_008": continue
         # command.append(c.get_add_object(r.name, object_id=id, library=lib_path))
         command.append( {"$type": "add_object",
                 "name": r.name,

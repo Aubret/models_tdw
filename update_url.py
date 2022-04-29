@@ -3,11 +3,12 @@ import json
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
+parser.add_argument("--src", type=str, default="/library")
 parser.add_argument("--dest", type=str, default="/library")
 args = parser.parse_args()
 
-current = str(Path().cwd().resolve())
-dest = current+args.dest
+current = src #str(Path().cwd().resolve())
+dest = args.dest
 # dest = "/sps/toy_library"
 
 

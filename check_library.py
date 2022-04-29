@@ -24,6 +24,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--library", type=str, default="library2/")
 parser.add_argument("--begin", type=int, default=0)
 parser.add_argument("--end", type=int, default=2000)
+parser.add_argument("--delete", type=int, default=0)
 args = parser.parse_args()
 
 
@@ -114,9 +115,12 @@ def run(begin=0, end=2000):
         scale_factor = min(limit/bottom, limit/top, limit/right, limit/left, limit/front, limit/back)
         js_copy["records"][r.name]["scale_factor"] = 0.2*scale_factor#js_copy["records"][r.name]["scale_factor"]*0.2
 
-        if delay > 0.5:
+        if delay > 0.5 and args.delete == 1:
             del js_copy["records"][r.name]
             print(r.name, "delay", delay)
+        # if r.wcategory == "drum":
+        #     del js_copy["records"][r.name]
+
         command = [{"$type": "destroy_object", "id": id}]
 
     c.communicate({"$type": "terminate"})
@@ -124,6 +128,7 @@ def run(begin=0, end=2000):
         del js_copy["records"]["piano_007"]
     if "train_003" in js_copy["records"]:
         del js_copy["records"]["train_003"]
+
 
     # del js_copy["records"]["truck_022"]
 
