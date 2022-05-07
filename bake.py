@@ -8,8 +8,8 @@ import os
 basedir = "/home/comsee/postdoc/datasets"
 # dir_dest = "toys4k_blend_baked_files/"
 # dir_src = "toys4k_blend_files/"
-dir_src = "test_blend2/"
-dir_dest = "test_blend2/"
+dir_src = "test_blend/"
+dir_dest = "test_blend/"
 
 import sys
 argv = sys.argv
@@ -41,6 +41,10 @@ def lightpack_unwrap():
         bpy.ops.wm.quit_blender()
         return -1
 
+    if type == "lightmap3":
+        bpy.ops.bakelab.unwrap(unwrap_method='lightmap_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True,
+                                   lightmap_margin=0.03, lightmap_quality=12)
+        return 1
 
     if type != "lightmap2":
         bpy.ops.bakelab.unwrap(unwrap_method='lightmap_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True,
@@ -49,9 +53,9 @@ def lightpack_unwrap():
         bpy.ops.bakelab.unwrap(unwrap_method='lightmap_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True,
                                lightmap_margin=0.3, lightmap_quality=12)
 
-    if len(bpy.context.active_object.data.uv_layers[0].data) > 200000:
-        return -1
-    return 0
+    # if len(bpy.context.active_object.data.uv_layers[0].data) > 200000:
+    #     return 0
+    return 1
 
 def check_overlaps(active_object, index = None):
     done = True
@@ -103,17 +107,13 @@ def run():
     while len(C.view_layer.objects[0].data.polygons) > max_poly+2000 and i < 4:
         i+=1
         print("too many polys", len(C.view_layer.objects[0].data.polygons))
-        bpy.ops.object.modifier_add(type='DECIMATE')
-        bpy.context.object.modifiers["Decimate"].ratio = max_poly/len(C.view_layer.objects[0].data.polygons)
-        bpy.ops.object.modifier_apply(modifier="Decimate")
-    # Error: Modifier
-    # cannot
-    # be
-    # applied
-    # to
-    # a
-    # mesh
-    # with shape keys
+        try:
+            bpy.ops.object.modifier_add(type='DECIMATE')
+            bpy.context.object.modifiers["Decimate"].ratio = max_poly/len(C.view_layer.objects[0].data.polygons)
+            bpy.ops.object.modifier_apply(modifier="Decimate")
+        except:
+            bpy.ops.wm.quit_blender()
+            return
 
     if len(C.view_layer.objects[0].data.polygons) > max_poly+2000:
         bpy.ops.wm.quit_blender()
@@ -128,7 +128,7 @@ def run():
                 if n.bl_label not in ["Principled BSDF", "Material Output"]:
                     nodes = True
 
-    if bpy.context.object.active_material and bpy.context.object.active_material.use_nodes and nodes:
+    if type != "none" and bpy.context.object.active_material and bpy.context.object.active_material.use_nodes and nodes:
         metal = 0
         for m in bpy.data.materials:
             if m.node_tree is not None and "Principled BSDF" in m.node_tree.nodes:
@@ -136,7 +136,6 @@ def run():
                 m.node_tree.nodes["Principled BSDF"].inputs[4].default_value = 0
 
         bpy.context.scene.BakeLabProps.metalic = metal
-
 
 
         bpy.context.scene.BakeLabProps.save_or_pack = 'SAVE'
@@ -155,6 +154,9 @@ def run():
                                # , uvmap_options_individual="CREATE_NEW")
         # # bpy.ops.bakelab.unwrap(unwrap_method='smart_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True)
         done = (type == "keep")
+        if type == "keep" and len(active_object.data.uv_layers) != 1:
+            bpy.ops.wm.quit_blender()
+            return
         if type == "all" and len(active_object.data.uv_layers) == 1 and len(bpy.data.materials) < 2:
             print("keep previous")
             done = check_overlaps(active_object, 0)
@@ -177,10 +179,10 @@ def run():
             # bpy.ops.uv.select_all()
 
 
-        if not done and (type == "all" or type == "lightmap1" or type == "lightmap2"):
+        if not done and (type == "all" or type == "lightmap1" or type == "lightmap2"  or type == "lightmap3"):
             print("try lightmap")
             err = lightpack_unwrap()
-            if err:
+            if not err:
                 bpy.ops.wm.quit_blender()
                 return
 
@@ -200,6 +202,9 @@ def run():
 
         bpy.ops.bakelab.bake()
     else:
+        # bpy.ops.file.make_paths_relative()
+        # bpy.ops.file.unpack_all(method='USE_LOCAL')
+        # os.rename(save_path+"/textures", save_path+"/Textures")
         path = save_path
         path_s = path.split("/")[-1]
         bpy.ops.export_scene.obj(filepath=path+"/"+path_s+".obj", use_selection=True)

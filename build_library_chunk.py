@@ -8,12 +8,14 @@ from tdw.asset_bundle_creator import AssetBundleCreator
 from tdw.librarian import ModelLibrarian, ModelRecord
 
 #Delete things before regeneration
-
+def str2table(v):
+    return v.split(',')
 # src = Path().home().joinpath("postdoc/datasets/toys4k_fbx/").resolve()
 parser = argparse.ArgumentParser()
 parser.add_argument("--directory", type=str, default="../datasets/toys4K_obj_all/")
 parser.add_argument("--dest", type=str, default="library2/")
 parser.add_argument("--vhacd", type=int, default=10000) #precision of vahcd mesh decomposition, 800 000 the original default
+parser.add_argument("--name", type=str2table, default="")
 args = parser.parse_args()
 
 src = Path().resolve().joinpath(args.directory).resolve()
@@ -62,12 +64,14 @@ def fix_json():
 
 a = AssetBundleCreator(display=":1")
 
+# if args.name == "":
 create_library()
 lib = ModelLibrarian(str(library_path.resolve()))
 
+# if args.name == "":
 i=0
 for record in lib.records:
-    if os.path.isdir(args.dest+record.wcategory+"/"+record.name):
+    if ( args.name[0] != "" or record.name not in args.name ) and os.path.isdir(args.dest+record.wcategory+"/"+record.name):
         continue
     i=i+1
     a.move_files_to_unity_project(None, model_path=src.joinpath(f"{record.wcategory}/{record.name}/{record.name}.{file_type}"), sub_directory=f"models/{record.name}")
@@ -76,8 +80,6 @@ for record in lib.records:
         fix_json()
 a.create_many_asset_bundles(str(library_path.resolve()), vhacd_resolution=args.vhacd, cleanup=True)
 fix_json()
-
-
 
 
 files_in_directory = os.listdir("./")

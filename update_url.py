@@ -1,3 +1,4 @@
+import argparse
 import copy
 import json
 from pathlib import Path
@@ -7,7 +8,7 @@ parser.add_argument("--src", type=str, default="/library")
 parser.add_argument("--dest", type=str, default="/library")
 args = parser.parse_args()
 
-current = src #str(Path().cwd().resolve())
+current = args.src #str(Path().cwd().resolve())
 dest = args.dest
 # dest = "/sps/toy_library"
 

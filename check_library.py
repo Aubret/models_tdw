@@ -20,11 +20,17 @@ from tdw.add_ons.third_person_camera import ThirdPersonCamera
 from tdw.add_ons.image_capture import ImageCapture
 from tdw.backend.paths import EXAMPLE_CONTROLLER_OUTPUT_PATH
 
+
+def str2table(v):
+    return v.split(',')
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--library", type=str, default="library2/")
 parser.add_argument("--begin", type=int, default=0)
 parser.add_argument("--end", type=int, default=2000)
 parser.add_argument("--delete", type=int, default=0)
+parser.add_argument("--not_include", type=int, default=0)
+parser.add_argument("--name", type=str2table, default="")
 args = parser.parse_args()
 
 
@@ -59,7 +65,16 @@ def run(begin=0, end=2000):
     i=0
     js = json.load(open(lib_path))
     js_copy = copy.deepcopy(js)
-
+    excluded = []
+    if args.not_include:
+        with open("not_include") as f:
+            rl = f.readlines()
+            for l in rl:
+                cat = "".join(list(l)[:-5])
+                name = "".join(list(l)[:-1])
+                if cat == "":
+                    continue
+                excluded.append(name)
 
     for r in lib.records:
         # if os.path.isdir(args.library + r.wcategory + "/" + r.name):
@@ -68,6 +83,10 @@ def run(begin=0, end=2000):
         i+=1
         id = c.get_unique_id()
         if i < begin or i > end or r.name == "":
+            continue
+        if args.not_include and r.name not in excluded:
+            continue
+        if args.name[0] != "" and r.name not in args.name:
             continue
         if i%50 == 0:
             print(i)
