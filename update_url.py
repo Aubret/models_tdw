@@ -1,19 +1,25 @@
 import argparse
 import copy
 import json
+import os
 from pathlib import Path
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--src", type=str, default="/library")
-parser.add_argument("--dest", type=str, default="/library")
+parser.add_argument("--src", type=str, default="")
+parser.add_argument("--dest", type=str, default="")
 args = parser.parse_args()
 
-current = args.src #str(Path().cwd().resolve())
-dest = args.dest
-# dest = "/sps/toy_library"
+src=args.src
+if args.src == "":
+    src = os.environ["TOY_TEX_LIBRARY_PATH"]
+
+dest=args.dest
+if args.src == "":
+    dest = os.environ["TOY_TEX_LIBRARY_PATH"]
 
 
-js = json.load(open(str(current)+"/toys.json"))
+
+js = json.load(open(str(src)+"/toys.json"))
 i= 0
 js_copy = copy.deepcopy(js)
 for key, val in js["records"].items():
@@ -21,5 +27,5 @@ for key, val in js["records"].items():
         new_url = dest + "/" + val["wnid"] + "/" + val["name"] +"/"+ platform
         js_copy["records"][key]["urls"][platform] = "file:///" + new_url
 
-with open(current+"/toys.json", 'w') as f:
+with open(src+"/toys.json", 'w') as f:
     json.dump(js_copy, f)

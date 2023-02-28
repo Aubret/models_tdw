@@ -22,7 +22,7 @@ type = argv[1]
 
 
 def lightpack_unwrap():
-    max_poly = 40000
+    max_poly = 50000
     i=0
     while len(bpy.context.view_layer.objects[0].data.polygons) > max_poly+2000 and i < 4:
         i+=1
@@ -44,6 +44,10 @@ def lightpack_unwrap():
     if type == "lightmap3":
         bpy.ops.bakelab.unwrap(unwrap_method='lightmap_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True,
                                    lightmap_margin=0.03, lightmap_quality=12)
+        return 1
+    if type == "lightmap4":
+        bpy.ops.bakelab.unwrap(unwrap_method='lightmap_uv', unwrap_mode='INDIVIDUAL', make_single_user_view=True,
+                                   lightmap_margin=0.1, lightmap_quality=12)
         return 1
 
     if type != "lightmap2":
@@ -179,7 +183,7 @@ def run():
             # bpy.ops.uv.select_all()
 
 
-        if not done and (type == "all" or type == "lightmap1" or type == "lightmap2"  or type == "lightmap3"):
+        if not done and (type == "all" or type == "lightmap1" or type == "lightmap2"  or type == "lightmap3" or type == "lightmap4"):
             print("try lightmap")
             err = lightpack_unwrap()
             if not err:

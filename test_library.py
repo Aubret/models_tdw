@@ -6,6 +6,7 @@ import time
 from contextlib import closing
 from subprocess import Popen
 
+from tdw.add_ons.embodied_avatar import EmbodiedAvatar
 from tdw.add_ons.floorplan import Floorplan
 from tdw.librarian import ModelLibrarian
 from tdw.output_data import OutputData, Images
@@ -69,8 +70,12 @@ def run(begin=0, end=2000):
     floorplan.init_scene(scene="1a", layout=0)
     c.add_ons.extend([floorplan])
     c.communicate([])
-    c.communicate(TDWUtils.create_avatar(avatar_type="A_Img_Caps", avatar_id="a",
-                                           position={"x": -9.5, "y": 1, "z": 2.6}))
+    # c.communicate(TDWUtils.create_avatar(avatar_type="A_Img_Caps", avatar_id="a",
+    #                                        position={"x": -9.5, "y": 1, "z": 2.6}))
+    c.add_ons.append(EmbodiedAvatar(avatar_id="a", position={"x": -9.5, "y": 1, "z": 2.6},
+                                         scale_factor={"x": 1, "y": 0, "z": 0.7}))
+    c.communicate([])
+
     images_path = EXAMPLE_CONTROLLER_OUTPUT_PATH.joinpath(args.store+"_"+str(begin)+"_"+str(end))
 
     # camera = ThirdPersonCamera(position={"x": -9.5, "y": 1, "z": 2.6}, avatar_id="a")
@@ -80,6 +85,7 @@ def run(begin=0, end=2000):
 
     # lib_path="test_library/toys.json"
     lib_path=args.library
+    print("start library")
     lib = ModelLibrarian(library=lib_path)
 
 
@@ -104,6 +110,7 @@ def run(begin=0, end=2000):
     # self.env.list_possible_names[i]
     # Begin by sending images for the next frame.
     command.append({"$type": "send_images","frequency": "always","ids": ["a"]})
+
     c.communicate(command)
 
     command = []
@@ -136,7 +143,8 @@ def run(begin=0, end=2000):
                 "name": r.name,
                 "url": r.get_url(),
                 "scale_factor": r.scale_factor,
-                "position":{ "x":-9.5, "y": 0.9, "z":3.3},
+                # "position":{ "x":-9.5, "y": 0.9, "z":3.3},
+                "position":{ "x":-9.5, "y": 0.4, "z":3.3},
                 "id": id})
         # c.get_add_object(r.name, object_id=id, library=lib_path, position={ "x":-9.5, "y": 1, "z":3.6},scale_factor=0.2)
         resp = c.communicate(command)

@@ -1,16 +1,13 @@
 import argparse
+import copy
+import json
 import os
-from json import loads
 from pathlib import Path
-from subprocess import call
-
-from tdw.asset_bundle_creator import AssetBundleCreator
 from tdw.librarian import ModelLibrarian, ModelRecord
 
-#Delete things before regeneration
 def str2table(v):
     return v.split(',')
-# src = Path().home().joinpath("postdoc/datasets/toys4k_fbx/").resolve()
+
 parser = argparse.ArgumentParser()
 parser.add_argument("--directory", type=str, default="../datasets/toys4K_obj_all/")
 parser.add_argument("--dest", type=str, default="library2/")
@@ -24,8 +21,6 @@ file_type="obj"
 library_path = dest.joinpath("toys.json")
 if not os.path.exists(dest):
     os.mkdir(args.dest)
-
-
 
 def create_library(library_path, src) :
     # ModelLibrarian.create_library(description="Toys model librarian", path=str(Path().home().joinpath("postdoc/datasets/toys4k_lib/toys.json")))
@@ -62,28 +57,23 @@ def fix_json(library_path):
         f.write(fixed_text)
 
 
-a = AssetBundleCreator(display=":1")
-
-# if args.name == "":
-create_library(library_path, src)
-lib = ModelLibrarian(str(library_path.resolve()))
-
-# if args.name == "":
-i=0
-for record in lib.records:
-    if ( args.name[0] != "" or record.name not in args.name ) and os.path.isdir(args.dest+record.wcategory+"/"+record.name):
-        continue
-    i=i+1
-    a.move_files_to_unity_project(None, model_path=src.joinpath(f"{record.wcategory}/{record.name}/{record.name}.{file_type}"), sub_directory=f"models/{record.name}")
-    if i%50 == 0:
-        a.create_many_asset_bundles(str(library_path.resolve()), vhacd_resolution=args.vhacd, cleanup=True)
-        fix_json(library_path)
-a.create_many_asset_bundles(str(library_path.resolve()), vhacd_resolution=args.vhacd, cleanup=True)
+create_library(library_path,src)
 fix_json(library_path)
 
+js = json.load(open(library_path))
+js_copy = copy.deepcopy(js)
+to_remove = []
+with open("disabled") as f:
+    rl = f.readlines()
+    for l in rl:
+        cat = "".join(list(l)[:-5])
+        name = "".join(list(l)[:-1])
+        if cat == "":
+            continue
+        to_remove.append(name)
+for name in to_remove:
+    if name in js_copy["records"]:
+        del js_copy["records"][name]
 
-files_in_directory = os.listdir("./")
-mtls = [file for file in files_in_directory if file.endswith(".mtl")]
-for file in mtls:
-    os.remove(str(Path().resolve().joinpath(file)))
-
+with open(library_path, 'w') as f:
+    json.dump(js_copy, f)
